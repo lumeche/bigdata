@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -31,9 +35,20 @@ public class WholeFileReader extends RecordReader<NullWritable, BytesWritable>{
 	public boolean nextKeyValue() throws IOException, InterruptedException {
 		if(processed){
 			return false;
-		}else{
+		}else{			
 			byte[] content=new byte[(int) fileSplit.getLength()];
-			
+			Path path = fileSplit.getPath();
+			logger.debug("About to read file %s", path.toString());
+			FileSystem fileSystem = path.getFileSystem(conf);
+			try {
+				FSDataInputStream is=fileSystem.open(path);
+				IOUtils.readFully(is, content, 0, content.length);
+				value.set(content, 0, content.length);
+				return true;
+			} catch (Exception e) {
+				logger.error("Error reading file",e);;
+				return false;
+			}
 		}
 	}
 
@@ -41,14 +56,12 @@ public class WholeFileReader extends RecordReader<NullWritable, BytesWritable>{
 	@Override
 	public NullWritable getCurrentKey() throws IOException,
 			InterruptedException {
-		// TODO Auto-generated method stub
 		return NullWritable.get();
 	}
 
 	@Override
 	public BytesWritable getCurrentValue() throws IOException,
 			InterruptedException {
-		// TODO Auto-generated method stub
 		return value;
 	}
 	
@@ -60,8 +73,7 @@ public class WholeFileReader extends RecordReader<NullWritable, BytesWritable>{
 
 	@Override
 	public float getProgress() throws IOException, InterruptedException {
-		// TODO Auto-generated method stub
-		return 0;
+		return processed?1.0f:0.0f;
 	}
 
 	
