@@ -1,19 +1,21 @@
 package com.test.luis.hadoop.io.input;
 
 import java.io.IOException;
-import java.nio.file.Files;
 
-import org.apache.commons.configuration.Configuration;
+
+
+
+
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,6 +26,7 @@ public class WholeFileReader extends RecordReader<NullWritable, BytesWritable>{
 	private boolean processed=false;
 	private FileSplit fileSplit;
 	private org.apache.hadoop.conf.Configuration conf;
+	
 	@Override
 	public void initialize(InputSplit inputSplit, TaskAttemptContext context)
 			throws IOException, InterruptedException {
