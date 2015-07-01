@@ -36,23 +36,23 @@ public class WholeFileReader extends RecordReader<NullWritable, BytesWritable>{
 
 	@Override
 	public boolean nextKeyValue() throws IOException, InterruptedException {
-		if(processed){
-			return false;
-		}else{			
+		if(!processed){			
 			byte[] content=new byte[(int) fileSplit.getLength()];
 			Path path = fileSplit.getPath();
 			logger.debug("About to read file %s", path.toString());
 			FileSystem fileSystem = path.getFileSystem(conf);
+			FSDataInputStream is=null;
 			try {
-				FSDataInputStream is=fileSystem.open(path);
+				is=fileSystem.open(path);
 				IOUtils.readFully(is, content, 0, content.length);
-				value.set(content, 0, content.length);
-				return true;
-			} catch (Exception e) {
-				logger.error("Error reading file",e);;
-				return false;
+				value.set(content, 0, content.length);				
+			} finally{
+				IOUtils.closeStream(is);
 			}
+			processed=true;
+			return true;
 		}
+		return false;
 	}
 
 	
